@@ -7,6 +7,7 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import axios from 'axios';
+import { findAllByTestId } from '@testing-library/dom';
 const CARD_TYPES = [
     "Visa", "MasterCard", "Amex"
 ]
@@ -14,44 +15,61 @@ class Payment extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            cardType: null,
+            cardType: "",
             cardNumber: 0,
-            expiryDate: new Date(),
-            name: null,
+            expiry: "",
+            name: "",
             email: null,
             cards: [],
             pSuccess: false,
             invoices: "",
             error: {},
-            hasError: false,
+            hasError: true,
         }
     }
+
     async componentDidMount() {
         const res = await axios.get("http://www.mocky.io/v2/5d145fa22f0000ff3ec4f030");
         console.log(res.data.cardType)
         const { cards } = this.state;
         res.data.cardTypes.map(item => {
             if (CARD_TYPES.includes(item.value)) {
-
                 cards.push(item.value);
             }
         })
         this.setState({
             cards,
         })
-
     }
-    handleChange = (e) => {
 
+    handleChange = (e) => {
         const { error } = this.state;
         error[e.target.name] = false;
+        console.log(e.target.name)
         this.setState({
             [e.target.name]: e.target.value,
             error
         })
         if (error.name && error.expiry && error.cardNumber && error.cardType) {
             this.setState({
-                hasError: true,
+                hasError: false,
+            })
+        }
+        console.log(this.state);
+    }
+    handleCardNumber = (e) => {
+        const { error, cardType } = this.state;
+        error.cardNumber = false;
+        if ((cardType === "Amex" && e.target.value.length <= 15) || e.target.value.length <= 16) {
+            console.log(e.target.value.length)
+            this.setState({
+                [e.target.name]: e.target.value,
+                error
+            })
+        }
+        if (error.name && error.expiry && error.cardNumber && error.cardType) {
+            this.setState({
+                hasError: false,
             })
         }
         console.log(this.state);
@@ -61,12 +79,29 @@ class Payment extends Component {
         const isValid = emailPattern.test(e.target.value);
         const { error } = this.state;
         console.log("valid", isValid)
+        error.email = false;
+        this.setState({
+            email: e.target.value,
+            error
+        })
         if (!isValid) {
-            error["email"] = true;
+            error.email = true;
             this.setState({
                 error,
             })
         }
+    }
+    handleExpiry = (e) => {
+        // const emailPattern = /^[0-9]+\/[0-9]$/;
+        // const isValid = emailPattern.test(e.target.value);
+        const { error } = this.state;
+        // console.log("valid", isValid)
+        error.expiry = false;
+        this.setState({
+            expiry: e.target.value,
+            error
+        })
+
     }
     onSubmit = async (e) => {
         const res = await axios.get("http://www.mocky.io/v2/5d8de422310000b19d2b517a");
@@ -80,19 +115,18 @@ class Payment extends Component {
     }
 
     onBlurHandle = (e) => {
-        const { error } = this.state;
-        error[e.target.name] = true;
+        // const { error } = this.state;
+        // error[e.target.name] = true;
+        // // if(this)
+        // this.setState({
+        //     error,
+        // })
 
-        this.setState({
-            error,
-        })
-        // if (this.state[e.target.name] == "") {
-        // }
-        console.log(this.state);
+        // console.log(this.state);
     }
     render() {
         const {
-            cardType, cardNumber, expiryDate, name, email, cards, pSuccess, error, hasError,
+            cardType, cardNumber, expiry, name, email, cards, pSuccess, error, hasError,
         } = this.state;
         return (
             <div>
@@ -137,23 +171,21 @@ class Payment extends Component {
                                     id="standard-required"
                                     type="number"
                                     name="cardNumber"
-                                    length={16}
+                                    maxLength={16}
                                     label="Card Number"
                                     onBlur={this.onBlurHandle}
-                                    onChange={this.handleChange}
+                                    onChange={this.handleCardNumber}
                                 />
 
                                 <TextField required id="standard-required" label="Expiry"
-
                                     error={error.expiry}
                                     className="ele"
-                                    onChange={this.handleChange}
+                                    onChange={this.handleExpiry}
                                     onBlur={this.onBlurHandle}
                                     name="expiry" />
 
                                 <TextField required id="standard-required"
                                     name="name"
-
                                     error={error.name}
                                     onChange={this.handleChange}
                                     onBlur={this.onBlurHandle}
@@ -164,15 +196,15 @@ class Payment extends Component {
                                     error={error.email}
                                     className="ele"
                                     onChange={this.handleEmail}
-                                    onBlur={this.onBlurHandle}
+                                    // onBlur={this.onBlurHandle}
                                     label="Email" />
 
                                 <Button variant="contained"
-                                    disabled={!hasError}
+                                    disabled={cardType === "" || cardNumber <= 0 || expiry === "" || name === ""}
                                     onClick={this.onSubmit}
                                     className="ele" color="primary">
                                     Confirm Payment
-</Button>
+                                </Button>
                             </FormControl>
                         </Paper>
                     </Grid>
