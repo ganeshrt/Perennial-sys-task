@@ -1,0 +1,30 @@
+.root {
+  /* flexGrow: 1, */
+  padding: 30px;
+  /* margin: 10px; */
+}
+.paper {
+  padding: 10px;
+  /* text-align: "center"; */
+  color: red;
+  height: 100%;
+}
+.formControl {
+  margin: 1px;
+  /* width: 50%;s */
+  min-width: 120px;
+}
+.selectEmpty {
+  margin-top: 2px;
+}
+.sel {
+  display: block;
+  width: 100%;
+}
+.ele {
+  margin: 6px;
+}
+.div1 {
+  top: 10px;
+  color: green;
+}
